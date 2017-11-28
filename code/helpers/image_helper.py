@@ -13,11 +13,11 @@ def showImage(img):
 	plt.imshow(img)
 	plt.show()
 
-def batchReadAndResizeImages(directory, outputSize, interpMethod):
+def batchReadAndResizeImages(directory, outputSize, interpMethod, imageExtension):
 	# 2D array of images
 	imgs = []
 	for file in os.listdir(directory):
-		if file.endswith('.png'):
+		if file.endswith(imageExtension):
 			img = misc.imread(directory+'/'+file, flatten=True);
 			img = resizeImage(img, outputSize, interpMethod)
 			#img = 1 - normalizeImage(img)
