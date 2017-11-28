@@ -7,7 +7,7 @@ def readNamesImageLabels(filename, columnNumbers=None, skipRows=None):
 
 		# skip header rows
 		if skipRows is not None:
-			startRow = skipRows - 1
+			startRow = skipRows
 		for line in lines[startRow:]:
 			cols = line.split()
 
@@ -16,8 +16,8 @@ def readNamesImageLabels(filename, columnNumbers=None, skipRows=None):
 
 			# append labels for that image to the list
 			if columnNumbers is not None:
-				imageLabels.append([int(cols[index]) for index in range(columnNumbers)])
+				imageLabels.append([int(cols[index]) for index in columnNumbers])
 			else:
-				imageLabels.append([int(cols[index]) for index in range(len(cols))])
+				imageLabels.append([int(cols[index]) for index in range(1, len(cols))])
 
 	return [imageNames, imageLabels]

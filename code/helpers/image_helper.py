@@ -20,8 +20,6 @@ def batchReadAndResizeImages(directory, outputSize, interpMethod, imageExtension
 		if file.endswith(imageExtension):
 			img = misc.imread(directory+'/'+file, flatten=True);
 			img = resizeImage(img, outputSize, interpMethod)
-			#img = 1 - normalizeImage(img)
-			img = 1 - img
 			img = img.flatten()
 			imgs.append(img)
 	return imgs
@@ -61,6 +59,6 @@ def readUSPSTrainImagesAndLbls(directory):
 	return [images, lbls]
 
 # function plots an image, input is flattened image
-def plotImage(flatImg):
-	img = np.resize(flatImg, [28, 28])
+def plotImage(flatImg, imageSize):
+	img = np.resize(flatImg, imageSize)
 	showImage(img)
