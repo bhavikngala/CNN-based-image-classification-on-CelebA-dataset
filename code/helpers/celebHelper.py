@@ -1,5 +1,3 @@
-import tensorflow as tf
-
 def readNamesImageLabels(filename, columnNumbers=None, skipRows=None):
 	imageNames = []
 	imageLabels = []
