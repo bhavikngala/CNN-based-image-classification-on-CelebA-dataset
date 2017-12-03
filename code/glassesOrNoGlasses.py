@@ -10,22 +10,21 @@ import numpy as np
 import tensorflow as tf
 
 tf.logging.set_verbosity(tf.logging.INFO)
+
 imageRes = [50, 50]
 imageResInput = [-1, 50, 50, 1]
+pool2outputSize = 12 * 12 * 64
+
 
 def readImages():
 	imageDirectory = './../data/img_align_celeba/'
 
-	images = davinci.batchReadAndResizeImages(imageDirectory, [150, 150], 'bilinear', '.jpg')
+	images = davinci.batchReadAndResizeImages(imageDirectory, imageRes, 'bilinear', '.jpg')
 	images = np.array(images)
 
-	davinci.plotImage(images[0,:], [150, 150])
+	davinci.plotImage(images[0,:], imageRes)
 
 	owl.writeNumpyArrayToFile('./../data/numpyarray/', 'images150.npy', images)
-
-# def transformLabels(labels):
-# 	labels[labels>=0.5] = 1
-# 	return (labels[labels<0.5] = 0)
 
 def cnnModel(features, labels, mode):
 	'''Model function for CNN.'''
@@ -39,12 +38,14 @@ def cnnModel(features, labels, mode):
 		kernel_size=[5, 5],
 		padding='same',
 		activation=tf.nn.relu)
+	print('convolution 1')
 
 	# Pooling Layer #1
 	pool1 = tf.layers.max_pooling2d(
 		inputs=conv1,
 		pool_size=[2, 2],
 		strides=2)
+	print('pooling 1')
 
 	# Convolutional Layer #2 and Pooling Layer #2
 	conv2 = tf.layers.conv2d(
@@ -53,33 +54,41 @@ def cnnModel(features, labels, mode):
 		kernel_size=[5,5],
 		padding='same',
 		activation=tf.nn.relu)
+	print('convolution 2')
+
 	pool2 = tf.layers.max_pooling2d(
 		inputs=conv2,
 		pool_size=[2, 2],
 		strides=2)
+	print('pooling 2')
 
 	# Dense Layers
-	pool2_flat = tf.reshape(pool2, [-1, 7*7*64])
+	pool2_flat = tf.reshape(pool2, [-1, pool2outputSize])
+	print('pooling 2 flat')
 
 	dense = tf.layers.dense(
 		inputs=pool2_flat,
 		units=1024,
 		activation=tf.nn.relu)
+	print('dense')
 
 	dropout = tf.layers.dropout(
 		inputs=dense,
 		rate=0.4,
 		training=mode == tf.estimator.ModeKeys.TRAIN)
+	print('dropout')
 
 	# Logits Layer
 	logits = tf.layers.dense(
 		inputs=dropout,
 		units=2)
+	print('logits')
 
 	predictions = {
 		'classes' : tf.argmax(input=logits, axis=1),
 		'probabilities': tf.nn.softmax(logits, name="softmax_tensor")
 	}
+	print('predictions')
 
 	if mode == tf.estimator.ModeKeys.PREDICT:
 		return tf.estimator.EstimatorSpec(mode=mode, predictions=predictions)
@@ -88,6 +97,7 @@ def cnnModel(features, labels, mode):
 	onehot_labels = tf.one_hot(indices=tf.cast(labels, tf.int32), depth=2)
 	loss = tf.losses.softmax_cross_entropy(onehot_labels=onehot_labels,
 		logits=logits)
+	print('loss')
 
 	# Configure the Training Op (for TRAIN mode)
 	if mode == tf.estimator.ModeKeys.TRAIN:
@@ -95,6 +105,7 @@ def cnnModel(features, labels, mode):
 		train_op = optimizer.minimize(
 			loss=loss,
 			global_step=tf.train.get_global_step())
+		print('train')
 		return tf.estimator.EstimatorSpec(mode=mode,
 			loss=loss, train_op=train_op)
 
@@ -102,6 +113,7 @@ def cnnModel(features, labels, mode):
 	eval_metric_ops = {
 		"accuracy": tf.metrics.accuracy(
 			labels=labels, predictions=predictions["classes"])}
+	print('evaluation')
 	return tf.estimator.EstimatorSpec(
 		mode=mode, loss=loss, eval_metric_ops=eval_metric_ops)
 
@@ -111,8 +123,8 @@ def main(unused_argv):
 		imageNameAndLabelsFile, [15], 2)
 
 	imageLabels = np.asarray(imageLabels, dtype=np.int32)
-
-	# imageLabels = transformLabels(imageLabels)
+	imageLabels[imageLabels<0] = 0
+	imageLabels = imageLabels.flatten()
 
 	images = owl.readNumpyArrayFromFile(
 		'./../data/numpyarray/images50.npy')
@@ -120,7 +132,7 @@ def main(unused_argv):
 	N = images.shape[0]
 
 	[images, imageLabels, vali_images, vali_labels, test_images, test_labels] = \
-		zeenat.separateDatasets(images, labels)
+		zeenat.separateDataSets(images, imageLabels)
 
 	# davinci.plotImage(images[0,:], imageRes)
 
@@ -146,7 +158,7 @@ def main(unused_argv):
 
 	glassesClassifier.train(
 		input_fn = trainInputFunc,
-		steps = 20000,
+		steps = 10000,
 		hooks = [logging_hook])
 
 	# evaluate the model and print results
