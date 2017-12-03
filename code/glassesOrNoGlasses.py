@@ -116,7 +116,11 @@ def main(unused_argv):
 
 	images = owl.readNumpyArrayFromFile(
 		'./../data/numpyarray/images50.npy')
+	images = images.astype('float32')
 	N = images.shape[0]
+
+	[images, imageLabels, vali_images, vali_labels, test_images, test_labels] = \
+		zeenat.separateDatasets(images, labels)
 
 	# davinci.plotImage(images[0,:], imageRes)
 
@@ -147,8 +151,8 @@ def main(unused_argv):
 
 	# evaluate the model and print results
 	eval_input_fn = tf.estimator.inputs.numpy_input_fn(
-		x={'x':images[50000:60000, :]},
-		y=imageLabels[50000:60000],
+		x={'x':test_images},
+		y=test_labels,
 		num_epochs=1,
 		shuffle=False)
 	eval_results = glassesClassifier.evaluate(input_fn = eval_input_fn)
