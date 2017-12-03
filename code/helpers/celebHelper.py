@@ -1,3 +1,5 @@
+import numpy as np
+
 def readNamesImageLabels(filename, columnNumbers=None, skipRows=None):
 	imageNames = []
 	imageLabels = []
@@ -21,3 +23,11 @@ def readNamesImageLabels(filename, columnNumbers=None, skipRows=None):
 				imageLabels.append([int(cols[index]) for index in range(1, len(cols))])
 
 	return [imageNames, imageLabels]
+
+def separateDataSets(images, labels):
+	N = images.shape[0]
+	p = np.random.permutation(N)
+
+	return [images[p[:int(N*0.8)]], labels[p[:int(N*0.8)]], \
+			images[p[int(N*0.8):int(N*0.9)]], labels[p[int(N*0.8):int(N*0.9)]], \
+			images[p[int(N*0.9):]], labels[p[int(N*0.9):]]]
