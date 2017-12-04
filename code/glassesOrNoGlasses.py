@@ -11,9 +11,9 @@ import tensorflow as tf
 
 tf.logging.set_verbosity(tf.logging.INFO)
 
-imageRes = [50, 50]
-imageResInput = [-1, 50, 50, 1]
-pool2outputSize = 12 * 12 * 64
+imageRes = [100, 100]
+imageResInput = [-1, 100, 100, 1]
+pool2outputSize = 25 * 25 * 64
 
 
 def readImages():
@@ -121,14 +121,14 @@ def main(unused_argv):
 	imageNameAndLabelsFile = './../data/list_attr_celeba.txt'
 
 	[imageNames, imageLabels] = zeenat.readNamesImageLabels(
-		imageNameAndLabelsFile, [20], 2)
+		imageNameAndLabelsFile, [15], 2)
 
 	imageLabels = np.asarray(imageLabels, dtype=np.int32)
 	imageLabels[imageLabels==-1] = 0
 	imageLabels = imageLabels.flatten()
 
 	images = owl.readNumpyArrayFromFile(
-		'./../data/numpyarray/images50.npy')
+		'./../data/numpyarray/images100.npy')
 	images = images.astype('float32')
 	N = images.shape[0]
 
@@ -139,9 +139,14 @@ def main(unused_argv):
 
 	# readImages()
 
+	malesDir = './modelMales/'
+	eyeglassesDir50 = '/model/'
+	eyeglassesDir100 = './model100/'
+	eyeglassesDir150 = './model150/'
+
 	# create the classifier
 	glassesClassifier = tf.estimator.Estimator(model_fn=cnnModel,
-		model_dir='./modelMales/')
+		model_dir=eyeglassesDir100)
 
 	# Set up logging for predictions
 	# Log the values in the "Softmax" tensor with label "probabilities"
@@ -157,9 +162,9 @@ def main(unused_argv):
 		num_epochs = None,
 		shuffle = True)
 
-	glassesClassifier.train(
-		input_fn = trainInputFunc,
-		steps = 5000)
+	# glassesClassifier.train(
+	# 	input_fn = trainInputFunc,
+	# 	steps = 5000)
 
 	# evaluate the model and print results
 	eval_input_fn = tf.estimator.inputs.numpy_input_fn(
