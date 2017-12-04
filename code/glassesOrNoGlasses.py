@@ -119,11 +119,12 @@ def cnnModel(features, labels, mode):
 
 def main(unused_argv):
 	imageNameAndLabelsFile = './../data/list_attr_celeba.txt'
+
 	[imageNames, imageLabels] = zeenat.readNamesImageLabels(
-		imageNameAndLabelsFile, [15], 2)
+		imageNameAndLabelsFile, [20], 2)
 
 	imageLabels = np.asarray(imageLabels, dtype=np.int32)
-	imageLabels[imageLabels<0] = 0
+	imageLabels[imageLabels==-1] = 0
 	imageLabels = imageLabels.flatten()
 
 	images = owl.readNumpyArrayFromFile(
@@ -140,35 +141,55 @@ def main(unused_argv):
 
 	# create the classifier
 	glassesClassifier = tf.estimator.Estimator(model_fn=cnnModel,
-		model_dir='/model/')
+		model_dir='./modelMales/')
 
 	# Set up logging for predictions
 	# Log the values in the "Softmax" tensor with label "probabilities"
-	tensors_to_log = {"probabilities": "softmax_tensor"}
-	logging_hook = tf.train.LoggingTensorHook(
-		tensors=tensors_to_log, every_n_iter=50)
+	# tensors_to_log = {"probabilities": "softmax_tensor"}
+	# logging_hook = tf.train.LoggingTensorHook(
+		# tensors=tensors_to_log, every_n_iter=50)
 
 	# train the model
 	trainInputFunc = tf.estimator.inputs.numpy_input_fn(
-		x={'x': images[:50000, :]},
-		y=imageLabels[:50000],
+		x={'x': images[0:50000]},
+		y=imageLabels[0:50000],
 		batch_size = 100,
 		num_epochs = None,
 		shuffle = True)
 
 	glassesClassifier.train(
 		input_fn = trainInputFunc,
-		steps = 10000,
-		hooks = [logging_hook])
+		steps = 5000)
 
 	# evaluate the model and print results
 	eval_input_fn = tf.estimator.inputs.numpy_input_fn(
-		x={'x':test_images},
-		y=test_labels,
+		x={'x':vali_images},
+		y=vali_labels,
 		num_epochs=1,
 		shuffle=False)
 	eval_results = glassesClassifier.evaluate(input_fn = eval_input_fn)
 	print(eval_results)
+
+	verifyImage = vali_images[0:10]
+	verifyLabels = vali_labels[0:10]
+
+
+	predict_input_fn = tf.estimator.inputs.numpy_input_fn(
+		x={"x": verifyImage},
+		num_epochs=1,
+		shuffle=False)
+
+	predictions = list(glassesClassifier.predict(input_fn=predict_input_fn))
+	predicted_classes = [p["classes"] for p in predictions]
+
+	print(
+		"New Samples, Class Predictions:    {}\n"
+		.format(predicted_classes))
+
+	print('\n\n~~~~~~~~~~~~~~~~~~~~~~ labels\n',verifyLabels)
+
+	for im in verifyImage:
+		davinci.plotImage(im, imageRes)
 
 if __name__ == '__main__':
 	tf.app.run()
