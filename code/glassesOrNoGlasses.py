@@ -162,9 +162,9 @@ def main(unused_argv):
 		num_epochs = None,
 		shuffle = True)
 
-	# glassesClassifier.train(
-	# 	input_fn = trainInputFunc,
-	# 	steps = 5000)
+	glassesClassifier.train(
+		input_fn = trainInputFunc,
+		steps = 5000)
 
 	# evaluate the model and print results
 	eval_input_fn = tf.estimator.inputs.numpy_input_fn(
