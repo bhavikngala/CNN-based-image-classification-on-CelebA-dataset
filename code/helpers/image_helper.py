@@ -13,6 +13,13 @@ def showImage(img):
 	plt.imshow(img)
 	plt.show()
 
+def batchReadImages(directory, imageNames):
+	imgs = []
+	for name in imageNames:
+		img = misc.imread(directory+name)
+		imgs.append(img)
+	return np.array(imgs)
+
 def batchReadAndResizeImages(directory, outputSize, interpMethod, imageExtension):
 	# 2D array of images
 	imgs = []
