@@ -25,7 +25,7 @@ def batchReadAndResizeImages(directory, outputSize, interpMethod, imageExtension
 	imgs = []
 	for file in os.listdir(directory):
 		if file.endswith(imageExtension):
-			img = misc.imread(directory+'/'+file, flatten=True);
+			img = misc.imread(directory+'/'+file, flatten=True)
 			img = resizeImage(img, outputSize, interpMethod)
 			img = img.flatten()
 			imgs.append(img)
