@@ -1,0 +1,19 @@
+First run evaluation: training set: 50000 samples
+INFO:tensorflow:Restoring parameters from /model/model.ckpt-3616
+INFO:tensorflow:Finished evaluation at 2017-12-04-03:41:30
+INFO:tensorflow:Saving dict for global step 3616: accuracy = 0.953159, global_step = 3616, loss = 0.142733
+{'accuracy':0.95315892, 'loss':0.14273272, 'global_step': 3616}
+
+Data augmentation: resolution 50 x 50
+INFO:tensorflow:Starting evaluation at 2017-12-06-05:36:17
+INFO:tensorflow:Restoring parameters from ./model_50/model.ckpt-2500
+INFO:tensorflow:Finished evaluation at 2017-12-06-05:36:56
+INFO:tensorflow:Saving dict for global step 2500: accuracy = 0.955133, global_step = 2500, loss = 0.14736
+{'accuracy': 0.95513326, 'loss': 0.14735997, 'global_step': 2500}
+
+Resolution: 100 x 100
+INFO:tensorflow:Starting evaluation at 2017-12-06-16:54:27
+INFO:tensorflow:Restoring parameters from ./model100/model.ckpt-2500
+INFO:tensorflow:Finished evaluation at 2017-12-06-16:57:04
+INFO:tensorflow:Saving dict for global step 2500: accuracy = 0.954097, global_step = 2500, loss = 0.629282
+{'accuracy': 0.95409673, 'loss': 0.629282, 'global_step': 2500}
