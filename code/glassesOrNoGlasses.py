@@ -11,7 +11,8 @@ import tensorflow as tf
 
 tf.logging.set_verbosity(tf.logging.INFO)
 
-imageRes = [100, 100]
+# for image res 50*50
+imageRes = [100, 00]
 imageResInput = [-1, 100, 100, 1]
 pool2outputSize = 25 * 25 * 64
 
@@ -25,6 +26,39 @@ def readImages():
 	davinci.plotImage(images[0,:], imageRes)
 
 	owl.writeNumpyArrayToFile('./../data/numpyarray/', 'images150.npy', images)
+
+def dataAndSampleItRandomly(imageFilename, labelsFilename, numSamples):
+	[_, imageLabels] = zeenat.readNamesImageLabels(
+		labelsFilename, [15], 2)
+
+	imageLabels = np.asarray(imageLabels, dtype=np.int32)
+	imageLabels[imageLabels==-1] = 0
+	imageLabels = imageLabels.flatten()
+
+	images = owl.readNumpyArrayFromFile(imageFilename)
+	images = images.astype('float32')
+
+	# randomIndices = np.random.permutation(numSamples)
+	N = images.shape[0]
+
+	return [images[0:numSamples], imageLabels[0:numSamples], images[int(N*0.9):], imageLabels[int(N*0.9):]]
+
+def readAugmentedData(filename):
+	images = owl.readNumpyArrayFromFile(filename)
+	images = images.astype('float32')
+	imageLabels = np.zeros([1, images.shape[0]], dtype=np.int32)
+	imageLabels = imageLabels.flatten()
+	return [images, imageLabels]
+
+def generateTrainingValiTestDatasets(imageFilename, labelsFilename,
+		augmentedFilename, numSamples):
+	[imagesA, imageLabelsA] = readAugmentedData(augmentedFilename)
+	[images, imageLabels, testImages, testLabels] = \
+		dataAndSampleItRandomly(imageFilename, labelsFilename, numSamples)
+	images = np.concatenate([images, imagesA], axis=0)
+	imageLabels = np.concatenate([imageLabels, imageLabelsA])
+		
+	return [images, imageLabels, testImages, testLabels]
 
 def cnnModel(features, labels, mode):
 	'''Model function for CNN.'''
@@ -119,28 +153,15 @@ def cnnModel(features, labels, mode):
 
 def main(unused_argv):
 	imageNameAndLabelsFile = './../data/list_attr_celeba.txt'
+	imagesFilename = './../data/numpyarray/images100.npy'
+	augmentedFilename = './../data/numpyarray/eyeglassesAugmented100.npy'
 
-	[imageNames, imageLabels] = zeenat.readNamesImageLabels(
-		imageNameAndLabelsFile, [15], 2)
-
-	imageLabels = np.asarray(imageLabels, dtype=np.int32)
-	imageLabels[imageLabels==-1] = 0
-	imageLabels = imageLabels.flatten()
-
-	images = owl.readNumpyArrayFromFile(
-		'./../data/numpyarray/images100.npy')
-	images = images.astype('float32')
-	N = images.shape[0]
-
-	[images, imageLabels, vali_images, vali_labels, test_images, test_labels] = \
-		zeenat.separateDataSets(images, imageLabels)
-
-	# davinci.plotImage(images[0,:], imageRes)
-
-	# readImages()
+	[images, imageLabels, test_images, test_labels] = \
+		generateTrainingValiTestDatasets(imagesFilename, imageNameAndLabelsFile, augmentedFilename, 65000)
 
 	malesDir = './modelMales/'
-	eyeglassesDir50 = '/model/'
+	# eyeglassesDir50 = '/model/'
+	eyeglassesDir50 = './model_50/'
 	eyeglassesDir100 = './model100/'
 	eyeglassesDir150 = './model150/'
 
@@ -156,27 +177,27 @@ def main(unused_argv):
 
 	# train the model
 	trainInputFunc = tf.estimator.inputs.numpy_input_fn(
-		x={'x': images[0:50000]},
-		y=imageLabels[0:50000],
-		batch_size = 100,
+		x={'x': images},
+		y=imageLabels,
+		batch_size = 250,
 		num_epochs = None,
 		shuffle = True)
 
 	glassesClassifier.train(
 		input_fn = trainInputFunc,
-		steps = 5000)
+		steps = 2500)
 
 	# evaluate the model and print results
 	eval_input_fn = tf.estimator.inputs.numpy_input_fn(
-		x={'x':vali_images},
-		y=vali_labels,
+		x={'x':test_images},
+		y=test_labels,
 		num_epochs=1,
 		shuffle=False)
 	eval_results = glassesClassifier.evaluate(input_fn = eval_input_fn)
 	print(eval_results)
 
-	verifyImage = vali_images[0:10]
-	verifyLabels = vali_labels[0:10]
+	verifyImage = test_images[0:10]
+	verifyLabels = test_labels[0:10]
 
 
 	predict_input_fn = tf.estimator.inputs.numpy_input_fn(
