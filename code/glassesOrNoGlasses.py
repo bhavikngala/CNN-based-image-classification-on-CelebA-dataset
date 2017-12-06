@@ -214,8 +214,5 @@ def main(unused_argv):
 
 	print('\n\n~~~~~~~~~~~~~~~~~~~~~~ labels\n',verifyLabels)
 
-	for im in verifyImage:
-		davinci.plotImage(im, imageRes)
-
 if __name__ == '__main__':
 	tf.app.run()
