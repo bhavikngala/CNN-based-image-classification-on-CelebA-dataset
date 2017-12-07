@@ -16,7 +16,7 @@ def showImage(img):
 def batchReadImages(directory, imageNames):
 	imgs = []
 	for name in imageNames:
-		img = misc.imread(directory+name)
+		img = misc.imread(directory+name, flatten=True)
 		imgs.append(img)
 	return np.array(imgs)
 

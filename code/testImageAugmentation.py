@@ -19,16 +19,26 @@ def main():
 		[imageNames[i] for i in range(len(imageNames)) if eyeglassesIndices[i]]
 
 	print(eyeglassesImageNames[0])
-	directory = './../data/img_align_celeba/'
+	directory = 'D:/datasets/celebA/img_align_celeba/'
 
-	imgs = davinci.batchReadImages(directory, [eyeglassesImageNames[0]])
+	imgs = davinci.batchReadImages(directory, eyeglassesImageNames)
 	print(imgs.shape)
 	# davinci.showImage(imgs[0])
 
-	rotatedImages = leonardo.rotateImages2(imgs, [45, 30, 15, -15, -30, -45], 'bilinear')
+	rotatedImages = leonardo.rotateImages2(imgs, [0, 45, 30, 15, -15, -30, -45], 'bilinear')
+	print(rotatedImages.shape)
 
-	for img in rotatedImages:
-		davinci.showImage(img)
+	images = []
+	for i in range(rotatedImages.shape[0]):
+		images.append((davinci.resizeImage(rotatedImages[i, :, :], [100, 100], 'bilinear')).flatten())
+
+	owl.writeNumpyArrayToFile('./../data/numpyarray/', 'eyeglassesAugmented100.npy', np.array(images))
+
+	images = []
+	for i in range(rotatedImages.shape[0]):
+		images.append((davinci.resizeImage(rotatedImages[i, :, :], [150, 150], 'bilinear')).flatten())
+
+	owl.writeNumpyArrayToFile('./../data/numpyarray/', 'eyeglassesAugmented150.npy', np.array(images))
 
 if __name__ == '__main__':
 	main()
